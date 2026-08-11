@@ -1,3 +1,5 @@
+import Chat from "./components/chat/Chat";
+
 export default function Home() {
   return (
     <main>
@@ -8,6 +10,9 @@ export default function Home() {
         Welcome to my portfolio. This website showcases my projects, skills,
         and experience as an AI student and aspiring frontend developer.
       </p>
+      <Chat />
     </main>
+    
   );
+  
 }
