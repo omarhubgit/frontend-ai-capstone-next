@@ -1,7 +1,9 @@
-import { GoogleGenAI } from "@google/genai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { convertToModelMessages, streamText } from "ai";
+import { getProjectDetails } from "@/lib/tools/project-tools";
 import { AI_MODEL, SYSTEM_PROMPT } from "@/lib/ai/config";
 
-const ai = new GoogleGenAI({
+const googleProvider = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
@@ -18,43 +20,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const conversation = messages
-      .map((message: { role: string; content: string }) => {
-        return `${message.role}: ${message.content}`;
-      })
-      .join("\n");
-
-    const response = await ai.models.generateContentStream({
-      model: AI_MODEL,
-      contents: `${SYSTEM_PROMPT}\n\nConversation:\n${conversation}`,
-    });
-
-    const encoder = new TextEncoder();
-
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of response) {
-            const text = chunk.text ?? "";
-
-            if (text) {
-              controller.enqueue(encoder.encode(text));
-            }
-          }
-
-          controller.close();
-        } catch (error) {
-          controller.error(error);
-        }
+    const result = streamText({
+      model: googleProvider(AI_MODEL),
+      system: SYSTEM_PROMPT,
+      messages: await convertToModelMessages(messages),
+      tools: {
+        get_project_details: getProjectDetails,
       },
+      stopWhen: ({ steps }) => steps.length >= 3,
     });
 
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
-      },
-    });
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("Chat API error:", error);
 
