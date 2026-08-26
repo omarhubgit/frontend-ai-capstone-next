@@ -10,10 +10,6 @@ type Project = {
   features: string[];
 };
 
-type ToolInput = {
-  projectName: string;
-};
-
 export default function Chat() {
   const [input, setInput] = useState("");
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
@@ -21,7 +17,8 @@ export default function Chat() {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const isAtBottomRef = useRef(true);
 
-  const { messages, sendMessage, status, stop } = useChat();
+  const { messages, sendMessage, status, stop, error, regenerate } =
+    useChat();
 
   const isLoading =
     status === "submitted" || status === "streaming";
@@ -88,6 +85,18 @@ export default function Chat() {
     });
   }
 
+  async function handleExampleQuestion(question: string) {
+    if (isLoading) {
+      return;
+    }
+
+    setInput("");
+
+    await sendMessage({
+      text: question,
+    });
+  }
+
   return (
     <section
       aria-labelledby="chat-title"
@@ -115,10 +124,40 @@ export default function Chat() {
           aria-label="Conversation"
         >
           {messages.length === 0 && (
-            <div className="flex h-full items-center justify-center text-center text-gray-500">
-              <p>
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <p className="text-gray-300">
                 Start a conversation by asking me something.
               </p>
+
+              <p className="mt-2 text-sm text-gray-500">
+                Try one of these questions:
+              </p>
+
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleExampleQuestion(
+                      "Tell me about my Movie Search & Favorites project."
+                    )
+                  }
+                  className="rounded-full border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-gray-300 transition hover:border-gray-500 hover:bg-gray-800"
+                >
+                  Tell me about my movie project
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleExampleQuestion(
+                      "What frontend technologies do I know?"
+                    )
+                  }
+                  className="rounded-full border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-gray-300 transition hover:border-gray-500 hover:bg-gray-800"
+                >
+                  What frontend technologies do I know?
+                </button>
+              </div>
             </div>
           )}
 
@@ -147,47 +186,53 @@ export default function Chat() {
                     );
                   }
 
-                  if (part.type === "tool-get_project_details") {
+                  if (
+                    part.type === "tool-get_project_details"
+                  ) {
                     if (part.state === "input-streaming") {
                       return (
                         <div
                           key={index}
-                          className="mt-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3"
+                          className="mt-3 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4"
                         >
-                          <p className="text-sm font-semibold text-yellow-300">
-                            Looking up project...
+                          <p className="text-xs font-semibold uppercase tracking-wide text-blue-300">
+                            Looking up project
                           </p>
 
-                          <p className="mt-1 text-xs text-gray-400">
-                            Preparing the project search.
+                          <p className="mt-2 text-sm text-gray-300">
+                            Preparing the project lookup...
                           </p>
                         </div>
                       );
                     }
 
                     if (part.state === "input-available") {
-                      const toolInput =
-                        part.input as ToolInput;
+                      const projectInput = part.input as {
+                        projectName: string;
+                      };
 
                       return (
                         <div
                           key={index}
-                          className="mt-3 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3"
+                          className="mt-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4"
                         >
-                          <p className="text-sm font-semibold text-blue-300">
-                            Looking up project
+                          <p className="text-xs font-semibold uppercase tracking-wide text-yellow-300">
+                            Project lookup
                           </p>
 
-                          <p className="mt-1 text-sm text-gray-200">
-                            {toolInput.projectName}
+                          <p className="mt-2 text-sm text-gray-300">
+                            Looking up:
+                          </p>
+
+                          <p className="mt-1 font-semibold text-white">
+                            {projectInput.projectName}
                           </p>
                         </div>
                       );
                     }
 
                     if (part.state === "output-available") {
-                      const project =
-                        part.output as Project;
+                      const project = part.output as Project;
 
                       return (
                         <div
@@ -250,15 +295,15 @@ export default function Chat() {
                           key={index}
                           className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4"
                         >
-                          <p className="text-sm font-semibold text-red-300">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-red-300">
                             Couldn't load project
                           </p>
 
-                          <p className="mt-1 text-sm text-gray-300">
-                            {part.errorText}
+                          <p className="mt-2 text-sm text-gray-300">
+                            An error occurred while looking up the project.
                           </p>
 
-                          <p className="mt-3 text-xs text-gray-500">
+                          <p className="mt-2 text-sm text-gray-400">
                             Try asking about another project.
                           </p>
                         </div>
@@ -284,6 +329,30 @@ export default function Chat() {
               <p className="mt-1 text-sm text-gray-400">
                 AI is thinking...
               </p>
+            </div>
+          )}
+
+          {error && (
+            <div
+              className="mr-8 rounded-xl border border-red-500/30 bg-red-500/10 p-4"
+              role="alert"
+            >
+              <p className="text-sm font-semibold text-red-300">
+                Something went wrong
+              </p>
+
+              <p className="mt-1 text-sm text-gray-300">
+                The AI response could not be completed.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => regenerate()}
+                disabled={isLoading}
+                className="mt-3 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Retry
+              </button>
             </div>
           )}
         </div>
