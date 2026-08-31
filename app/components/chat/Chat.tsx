@@ -297,7 +297,7 @@ export default function Chat() {
                           className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4"
                         >
                           <p className="text-xs font-semibold uppercase tracking-wide text-red-300">
-                            Couldn't load project
+                            Couldn&apos;t load project
                           </p>
 
                           <p className="mt-2 text-sm text-gray-300">
