@@ -301,7 +301,7 @@ describe("Chat", () => {
     render(<Chat />);
 
     const stopButton = screen.getByRole("button", {
-      name: "Stop",
+      name: "Stop AI response",
     });
 
     expect(stopButton).toBeInTheDocument();

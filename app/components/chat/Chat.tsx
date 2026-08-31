@@ -120,7 +120,7 @@ export default function Chat() {
           ref={messagesContainerRef}
           onScroll={handleScroll}
           className="h-[450px] space-y-4 overflow-y-auto rounded-xl border border-gray-700 bg-gray-950 p-4"
-          aria-live="polite"
+          
           aria-label="Conversation"
         >
           {messages.length === 0 && (
@@ -179,6 +179,7 @@ export default function Chat() {
                     return (
                       <p
                         key={index}
+                        aria-live={message.role === "assistant" ? "polite" : undefined}
                         className="whitespace-pre-wrap text-sm leading-6 text-gray-200"
                       >
                         {part.text}
@@ -392,7 +393,8 @@ export default function Chat() {
           <button
             type="button"
             onClick={stop}
-            className="rounded-lg bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-500"
+            aria-label="Stop AI response"
+             className="rounded-lg bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-950"
           >
             Stop
           </button>
