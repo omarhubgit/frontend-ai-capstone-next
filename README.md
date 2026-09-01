@@ -1,132 +1,400 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Career Assistant
+
+A production-ready AI-powered portfolio website built with Next.js. It allows visitors to explore my projects, skills, frontend experience, and interact with an AI Career Assistant that can retrieve structured project information through a server-side tool.
+
+## Live Demo
+
+**Production:** [Live Demo](https://frontend-ai-capstone-next.vercel.app/)
+
+## Screenshots
+
+### Portfolio
+
+![Portfolio homepage](./public/screenshots/homepage.png)
+
+### AI Career Assistant
+
+![AI Career Assistant](./public/screenshots/ai-career-assistant.png)
+
+
+### Responsive Design
+
+![Mobile layout](./public/screenshots/mobile.png)
+---
+
+## What It Does
+
+The website presents my developer portfolio while providing an AI-powered way for recruiters and visitors to ask questions about my:
+
+* Projects
+* Frontend technologies
+* Technical skills
+* Development experience
+
+The AI Career Assistant can also call a server-side `get_project_details` tool to retrieve structured information about portfolio projects and display the result as a real UI component.
+
+---
+
+## Features
+
+* AI-powered career assistant
+* Server-side AI tool calling
+* Structured project information
+* Generative UI for tool results
+* Tool lifecycle states:
+
+  * Input streaming
+  * Input available
+  * Output available
+  * Output error
+* Responsive portfolio pages
+* Accessible chat interface
+* Loading and error states
+* Stop AI response functionality
+* Retry failed AI responses
+* Automatic chat scrolling
+* Jump-to-latest control
+* Protected AI route with input limits
+* Streaming response timeout
+* Automated unit/component tests
+* Automated cross-browser E2E testing
+
+---
+
+## Tech Stack
+
+| Technology           | Purpose                              |
+| -------------------- | ------------------------------------ |
+| Next.js              | Application framework                |
+| React                | User interface                       |
+| TypeScript           | Type-safe development                |
+| Tailwind CSS         | Styling                              |
+| Vercel AI SDK        | AI streaming and tool calling        |
+| Google Generative AI | AI model provider                    |
+| Zod                  | Tool input validation                |
+| Vitest               | Unit/component testing               |
+| Testing Library      | React component testing              |
+| Playwright           | End-to-end and cross-browser testing |
+| Vercel               | Production deployment                |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/omarhubgit/frontend-ai-capstone-next.git
+cd frontend-ai-capstone-next
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure environment variables
+
+Create a `.env.local` file in the project root:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+Do not commit `.env.local` or expose the API key publicly.
+
+### Environment Variables
+
+| Variable         | Required | Description                                                   |
+| ---------------- | -------- | ------------------------------------------------------------- |
+| `GEMINI_API_KEY` | Yes      | API key used by the server-side Google Generative AI provider |
+
+### 4. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Architecture Overview
 
-To learn more about Next.js, take a look at the following resources:
+The application uses a Next.js App Router architecture.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+User
+  │
+  ▼
+Portfolio UI
+  │
+  ├── Projects
+  ├── Skills
+  ├── About
+  └── AI Career Assistant
+          │
+          ▼
+      /api/chat
+          │
+          ├── Input validation
+          ├── Google AI model
+          ├── System prompt
+          └── get_project_details tool
+                  │
+                  ▼
+            Structured project data
+                  │
+                  ▼
+             Generative UI
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Main areas
 
-## Deploy on Vercel
+```text
+app/
+├── api/chat/
+│   └── route.ts              # Server-side AI streaming endpoint
+├── components/
+│   └── chat/
+│       └── Chat.tsx          # AI chat interface
+├── about/
+├── contact/
+├── projects/
+├── resume/
+├── skills/
+└── page.tsx
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+lib/
+├── ai/
+│   └── config.ts             # AI model and system prompt configuration
+└── tools/
+    └── project-tools.ts      # Server-side project lookup tool
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+tests/
+└── Chat.test.tsx             # Component tests
 
-## FE-07 — Server Tool Contract
+e2e/
+└── chat.spec.ts              # End-to-end chat test
+```
 
-### Tool: `get_project_details`
+---
 
-The AI Career Assistant uses a server-side tool called `get_project_details` to retrieve structured information about portfolio projects.
+## AI Tool Calling
 
-### Input schema
+The application includes a server-side tool called:
 
-The tool accepts one input field:
+```text
+get_project_details
+```
 
-- `projectName` — a string containing the name of the project to look up.
+The tool allows the AI to retrieve structured information about a portfolio project instead of relying only on unstructured text generation.
+
+### Input
+
+The tool accepts:
+
+```ts
+{
+  projectName: string;
+}
+```
 
 The input is validated with Zod.
 
-```ts
-z.object({
-  projectName: z
-    .string()
-    .describe(
-      "The name of the project to look up, such as Movie Search & Favorites."
-    ),
-})
-Return shape
+### Output
 
-When a project is found, the tool returns:
+A successful lookup returns:
+
+```ts
 {
   name: string;
   description: string;
   technologies: string[];
   features: string[];
 }
-Example:
-{
-  name: "Movie Search & Favorites",
-  description: "A React application for searching movies and saving favorite movies.",
-  technologies: [
-    "React",
-    "Vite",
-    "JavaScript",
-    "TMDB API",
-    "LocalStorage"
-  ],
-  features: [
-    "Movie search",
-    "Movie results display",
-    "Favorites",
-    "LocalStorage persistence"
-  ]
-}
-Tool lifecycle UI
+```
 
-The client renders the tool lifecycle using typed tool parts:
+### Tool Lifecycle
 
-input-streaming — shows that the project lookup is being prepared.
-input-available — shows which project is being looked up.
-output-available — renders the returned project as a structured project card.
-output-error — renders a designed error state when the tool fails.
+The chat UI renders different states during the tool call:
 
-Press:
+| State              | UI                                              |
+| ------------------ | ----------------------------------------------- |
+| `input-streaming`  | Shows that the project lookup is being prepared |
+| `input-available`  | Shows the project being requested               |
+| `output-available` | Displays the structured project card            |
+| `output-error`     | Displays a user-friendly error state            |
 
-**Ctrl + S**
+This demonstrates the complete flow from an AI tool call to structured data rendered as a real frontend component.
 
 ---
 
-# STEP 56 — Final FE-07 test checklist
+## Production Protection
 
-We are **not moving to FE-08**.
+Because the AI endpoint is publicly accessible, the application includes basic protection against trivial abuse.
 
-We only need to verify FE-07.
+### Input limits
 
-Your checklist should now be:
+The `/api/chat` route limits:
 
-| Requirement | Result |
-|---|---|
-| Server-side tool | ✅ |
-| Zod schema | ✅ |
-| Execute function | ✅ |
-| `input-streaming` UI | ✅ |
-| `input-available` UI | ✅ |
-| `output-available` UI | ✅ |
-| `output-error` UI | ✅ |
-| Real component result | ✅ Project Card |
-| Failed execution doesn't crash | ✅ Tested |
-| README contract | ✅ |
-| Preview/demo | ⏳ |
+* Maximum number of messages: **20**
+* Maximum total text input: **8,000 characters**
 
-The only thing remaining is **commit + push + deployment/preview**.
+Requests exceeding these limits are rejected before being sent to the AI model.
 
-⏱️ **Time left: ~10 minutes**
+### Streaming duration
 
-Before we do that, save `README.md`, then tell me:
+The AI route uses:
 
-**README done**
+```ts
+export const maxDuration = 30;
+```
 
-and we'll do the final Git + deployment steps and then I'll give you **exactly what to submit for FE-07** — and we stop there.
+This provides a sensible maximum duration for a streaming AI request.
+
+---
+
+## Testing
+
+The project includes automated tests for the main application flow.
+
+### Unit and component tests
+
+Run:
+
+```bash
+npm run test:run
+```
+
+The current test suite contains **11 passing tests**.
+
+### Lint
+
+Run:
+
+```bash
+npm run lint
+```
+
+### Production build
+
+Run:
+
+```bash
+npm run build
+```
+
+### Cross-browser E2E tests
+
+Run:
+
+```bash
+npx playwright test
+```
+
+The E2E flow is tested against:
+
+* Chrome
+* Firefox
+* Safari/WebKit
+* Mobile Safari/WebKit
+
+The final cross-browser test pass completed successfully with **4/4 tests passing**.
+
+---
+
+## Engineering Decisions
+
+### Server-side AI calls
+
+The AI provider and API key remain on the server rather than being exposed to the browser.
+
+### Structured tool results
+
+Project information is returned as structured data so the frontend can render a dedicated project component instead of displaying raw JSON.
+
+### Input protection
+
+The public chat endpoint uses message and character limits to reduce the risk of excessive API usage.
+
+### Streaming
+
+AI responses are streamed to provide a more responsive chat experience.
+
+### Accessibility
+
+The interface includes accessible labels, semantic controls, live regions for assistant responses, keyboard-friendly interactions, and visible focus states.
+
+### Responsive design
+
+The portfolio and chat interface are designed to work across desktop and mobile layouts.
+
+---
+
+## How AI Tools Built This Project
+
+AI tools were used as development assistants throughout the project rather than as a replacement for understanding or verification.
+
+Specific uses included:
+
+* Planning the application architecture
+* Designing the AI chat flow
+* Creating and refining the server-side `get_project_details` tool
+* Designing the Zod input schema
+* Implementing generative UI states
+* Reviewing accessibility issues
+* Creating and debugging automated tests
+* Improving the Playwright cross-browser test
+* Reviewing production-readiness concerns
+* Drafting and improving project documentation
+
+AI-generated suggestions were reviewed, tested, and adapted to the application's actual requirements.
+
+The development process and reflections are documented separately in:
+
+* `prompts.md`
+* `AI-Reflection.md`
+
+These files contain the prompts used during development and a detailed reflection on how AI tools contributed to the project.
+
+---
+
+## Deployment
+
+The application is deployed to Vercel as a production Next.js application.
+
+Before deployment, the project was verified with:
+
+```bash
+npm run lint
+npm run test:run
+npm run build
+npx playwright test
+```
+
+All final checks passed.
+
+The production deployment uses the required `GEMINI_API_KEY` environment variable configured in the deployment environment.
+
+---
+
+## Project Goals
+
+This project was built as part of the FlyRank Frontend AI Engineering track to demonstrate practical skills in:
+
+* React and Next.js development
+* AI-powered frontend experiences
+* Server-side AI tool calling
+* Generative UI
+* API protection
+* Accessibility
+* Automated testing
+* Cross-browser compatibility
+* Production deployment
+* Technical documentation

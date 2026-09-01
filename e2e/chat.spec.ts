@@ -9,11 +9,20 @@ test("user can complete the primary AI chat flow", async ({ page }) => {
 
   await expect(chatInput).toBeVisible();
 
-  await chatInput.fill(
+  await chatInput.click();
+  await chatInput.pressSequentially(
     "What frontend technologies do I know?"
   );
 
-  await page.getByRole("button", { name: "Send" }).click();
+  await expect(chatInput).toHaveValue(
+    "What frontend technologies do I know?"
+  );
+
+  const sendButton = page.getByRole("button", { name: "Send" });
+
+  await expect(sendButton).toBeEnabled({ timeout: 10000 });
+
+  await sendButton.click();
 
   await expect(
     page.getByText("What frontend technologies do I know?")
