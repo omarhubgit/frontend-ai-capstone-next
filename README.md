@@ -6,6 +6,10 @@ A production-ready AI-powered portfolio website built with Next.js. It allows vi
 
 **Production:** [Live Demo](https://frontend-ai-capstone-next.vercel.app/)
 
+## Project Brief
+
+AI Career Assistant is a production-ready portfolio website designed for recruiters and visitors who want to quickly understand my technical skills, projects, and frontend experience. The project combines a traditional developer portfolio with an AI assistant that can retrieve structured project information through a server-side tool, making the portfolio more interactive while demonstrating practical AI engineering, frontend development, accessibility, testing, and deployment skills.
+
 ## Screenshots
 
 ### Portfolio
@@ -16,10 +20,14 @@ A production-ready AI-powered portfolio website built with Next.js. It allows vi
 
 ![AI Career Assistant](./public/screenshots/ai-career-assistant.png)
 
-
 ### Responsive Design
 
 ![Mobile layout](./public/screenshots/mobile.png)
+
+### Accessibility Audit
+
+![WAVE accessibility audit](./public/screenshots/accessibility-audit.png)
+
 ---
 
 ## What It Does
@@ -154,7 +162,7 @@ Portfolio UI
              Generative UI
 ```
 
-### Main areas
+### Main Areas
 
 ```text
 app/
@@ -237,9 +245,9 @@ This demonstrates the complete flow from an AI tool call to structured data rend
 
 ## Production Protection
 
-Because the AI endpoint is publicly accessible, the application includes basic protection against trivial abuse.
+Because the AI endpoint is publicly accessible, the application includes basic protection against excessive input and long-running requests.
 
-### Input limits
+### Input Limits
 
 The `/api/chat` route limits:
 
@@ -248,7 +256,7 @@ The `/api/chat` route limits:
 
 Requests exceeding these limits are rejected before being sent to the AI model.
 
-### Streaming duration
+### Streaming Duration
 
 The AI route uses:
 
@@ -264,7 +272,7 @@ This provides a sensible maximum duration for a streaming AI request.
 
 The project includes automated tests for the main application flow.
 
-### Unit and component tests
+### Unit and Component Tests
 
 Run:
 
@@ -282,7 +290,7 @@ Run:
 npm run lint
 ```
 
-### Production build
+### Production Build
 
 Run:
 
@@ -290,7 +298,7 @@ Run:
 npm run build
 ```
 
-### Cross-browser E2E tests
+### Cross-Browser E2E Tests
 
 Run:
 
@@ -307,19 +315,59 @@ The E2E flow is tested against:
 
 The final cross-browser test pass completed successfully with **4/4 tests passing**.
 
+The critical AI chat flow is covered by an end-to-end test, including interaction with the chat interface and the AI response flow.
+
+---
+
+## Performance & Accessibility Audit
+
+### Lighthouse
+
+The production application was audited with Lighthouse on desktop.
+
+| Category       | Score |
+| -------------- | ----: |
+| Performance    |   100 |
+| Accessibility  |    95 |
+| Best Practices |   100 |
+| SEO            |   100 |
+
+The results exceed the capstone target of 85+ in every category.
+
+### WAVE Accessibility
+
+The application was also reviewed using the WAVE accessibility evaluation tool.
+
+* Errors: **0**
+* Contrast Errors: **0**
+* Alerts: **0**
+* AIM Score: **10/10**
+
+The WAVE audit found no detected accessibility errors or contrast errors. The project also includes accessible labels, semantic controls, keyboard-friendly interactions, visible focus states, and live regions for assistant responses.
+
+### Accessibility Improvement
+
+As part of the accessibility review, the chat interface was improved and verified with accessible labels and semantic interactive controls so that important controls and the chat input are understandable to assistive technologies and usable with keyboard navigation.
+
+The WAVE audit screenshot is included in the repository at:
+
+```text
+public/screenshots/accessibility-audit.png
+```
+
 ---
 
 ## Engineering Decisions
 
-### Server-side AI calls
+### Server-Side AI Calls
 
 The AI provider and API key remain on the server rather than being exposed to the browser.
 
-### Structured tool results
+### Structured Tool Results
 
 Project information is returned as structured data so the frontend can render a dedicated project component instead of displaying raw JSON.
 
-### Input protection
+### Input Protection
 
 The public chat endpoint uses message and character limits to reduce the risk of excessive API usage.
 
@@ -331,7 +379,7 @@ AI responses are streamed to provide a more responsive chat experience.
 
 The interface includes accessible labels, semantic controls, live regions for assistant responses, keyboard-friendly interactions, and visible focus states.
 
-### Responsive design
+### Responsive Design
 
 The portfolio and chat interface are designed to work across desktop and mobile layouts.
 
@@ -365,22 +413,82 @@ These files contain the prompts used during development and a detailed reflectio
 
 ---
 
+## Known Limitations & Future Improvements
+
+### Current Limitations
+
+* The AI assistant depends on the availability of the configured Google Generative AI provider.
+* The project lookup tool currently provides information for the portfolio projects defined by the application.
+* The application uses basic input limits rather than a full authentication or rate-limiting system.
+
+### Future Improvements
+
+* Add persistent conversation history for returning visitors.
+* Add stronger server-side rate limiting and abuse protection.
+* Expand the tool system to retrieve skills, experience, and contact information.
+* Add analytics to understand how visitors interact with the AI assistant.
+* Add more automated accessibility and visual regression testing.
+
+---
+
 ## Deployment
 
 The application is deployed to Vercel as a production Next.js application.
+
+Production URL:
+
+https://frontend-ai-capstone-next.vercel.app/
+
+Repository:
+
+https://github.com/omarhubgit/frontend-ai-capstone-next
 
 Before deployment, the project was verified with:
 
 ```bash
 npm run lint
+
 npm run test:run
+
 npm run build
+
 npx playwright test
 ```
 
 All final checks passed.
 
 The production deployment uses the required `GEMINI_API_KEY` environment variable configured in the deployment environment.
+
+The production deployment and operational readiness checks are documented in:
+
+```text
+DEPLOYMENT-CHECKLIST.md
+```
+
+---
+
+## Deployment & Rollback
+
+The application is deployed through Vercel from the main Git branch.
+
+### Deployment Verification
+
+After deployment, the following were verified:
+
+* Production application loads successfully
+* Portfolio pages are accessible
+* AI Career Assistant responds
+* Server-side project tool works
+* Structured project information renders correctly
+* Responsive layouts work across tested browsers
+* Lighthouse audit completed successfully
+* WAVE accessibility audit completed successfully
+
+### Rollback Plan
+
+If a production deployment introduces a serious regression, the previous known-good deployment can be restored through Vercel's deployment history. The Git repository also provides version history so a previous stable commit can be identified and redeployed.
+
+Operational checks and sign-off are documented in `DEPLOYMENT-CHECKLIST.md`.
 
 ---
 
